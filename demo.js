@@ -55,6 +55,7 @@ var	svg
 // Game vars
 var nTurns = 6
 var currentTurn = 1
+var conquest
 
 var VoronoiGame = {
 
@@ -65,7 +66,7 @@ var VoronoiGame = {
 		.append("svg")
 		.attr("width", window.bboxWidth)
 		.attr("height", window.bboxHeight)
-		.attr("style", "cursor:crosshair")
+		.attr("style", "cursor:crosshair; margin:0 auto;")
 		.attr("border", 0)
 		.on("click", function() {
 
@@ -76,7 +77,10 @@ var VoronoiGame = {
 				VoronoiGame.addSite(coordinates)
 
 				if (++currentTurn > nTurns) {
-					setTimeout(function(){ alert("Game Over") }, 1000);
+					setTimeout(function(){ 
+						var winner = VoronoiGame.calculateWinner(conquest)
+						alert(winner + " wins!") 
+					}, 500);
 				}
 			}
 		})
@@ -112,7 +116,7 @@ var VoronoiGame = {
 
 		// Recompute the diagram and draw it
 		var diagram = window.voronoi.compute(sites, window.bbox)
-		var conquest = this.computeConquest(diagram.cells, level.conquerPoints)
+		conquest = this.computeConquest(diagram.cells, level.conquerPoints)
 		
 		this.drawSites(sites)
 		this.drawConqueredPoints(conquest)
@@ -127,21 +131,12 @@ var VoronoiGame = {
 
 			var cell = cells[i]
 			var areaVertices = []
-			var areaEdges = []
-var asd = 0
+
 			for(halfedge of cell.halfedges) {
-				asd++
-				//areaVertices.push(halfedge.getStartpoint())
-				if (i == 1 && asd == 1) {
-					areaEdges.push({va: halfedge.edge.vb, vb: halfedge.edge.va})	
-				}else {
-				areaEdges.push(halfedge.edge)
+				areaVertices.push(halfedge.getStartpoint())
 			}
-		}
 
-			//areas.push({id: i, points: areaVertices})
-			areas.push({id: i, segments: areaEdges})
-
+			areas.push({id: this.indexOf(cell.site, sites), points: areaVertices})
 		}
 
 		var conqueredPoints = []
@@ -181,7 +176,7 @@ var asd = 0
 			var coord = point.coordinates
 
 			var image;
-			console.log(siteId)
+
 			if (siteId == NOT_CONQUERED) {
 				image = conquerImages[NOT_CONQUERED]
 			} else {
@@ -228,4 +223,47 @@ var asd = 0
 
 		return found;
 	},
+
+	indexOf : function(site1, sites) {
+
+		var index = -1
+
+		for (var i = 0; i < sites.length && index == -1; i++) {
+
+			var site2 = sites[i]
+
+			if (site1.x == site2.x && site1.y == site2.y) {
+				index = i
+			}
+		}
+
+		return index
+	},
+
+	calculateWinner : function (points) {
+
+		var winner = ""
+
+		var scores = [0,0]
+		
+		for(var i = 0; i < points.length; i++) {
+			
+			var point = points[i]
+
+			var siteId = point.siteId
+			var coord = point.coordinates
+
+			if (siteId != NOT_CONQUERED) {
+				scores[siteId % 2]++
+			}
+		}
+
+		if (scores[CONQUERED_BY_PLAYER1] > scores[CONQUERED_BY_PLAYER2]) {
+			winner = "Player 1"
+		} else {
+			winner = "Player 2"
+		}
+
+		return winner
+	}
 }

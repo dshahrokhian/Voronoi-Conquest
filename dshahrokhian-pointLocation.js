@@ -46,6 +46,7 @@ PointLocation = function() {
 	var D;
 	var mapSegments;
 	var nextUniqueId;
+	var degeneratePoints;
 
 	var Node = function(type) {
 		this.type = type
@@ -143,6 +144,20 @@ PointLocation = function() {
 			return false
 		};
 
+		this.getIndex = function(array) {
+
+			index = -1;
+
+			for (var i = 0; (i < array.length) && (index == -1); i++) {
+
+				if (this.equals(array[i])) {
+					index = i
+				}
+			}
+
+			return index;
+		};
+
 		this.equals = function(segment) {
 
 			var thisRealX = ((this.isDegenerate()) ? this.vb.x - 1 : this.vb.x)
@@ -166,6 +181,8 @@ PointLocation = function() {
 		D = {};
 		mapSegments = [];
 		nextUniqueId = -1;
+		degeneratePoints = [];
+		normAreas = []
 
 		var trapezoid = new Trapezoid();
 		trapezoid.setSiteId(-1)
@@ -178,20 +195,27 @@ PointLocation = function() {
 
 		D[trapezoid.id] = trapezoid
 		S = new Leaf(trapezoid.id)
+		falsePositive = false
 
 		for (area of areas) {
-			//addArea(area.id, area.points)
-			addArea(area.id, area.segments)
+			addArea(area.id, area.points)
+			//addArea(area.id, area.segments)
 		}
 
-		for (segment of mapSegments) {
-			console.log("segment: xa " + segment.va.x + ", xb" + segment.vb.x + ", ya " + segment.va.y + ", yb " + segment.vb.y + ", left" + segment.leftSiteId + ", right" + segment.rightSiteId)
-		}
+		// for (segment of mapSegments) {
+		// 	console.log("segment: ")
+		// 	console.log("  va")
+		// 	console.log("    x: " + segment.va.x + ", y: " + segment.va.y)
+		// 	console.log("  vb")
+		// 	console.log("    x: " + segment.vb.x + ", y: " + segment.vb.y)
+		// 	console.log("  sites")
+		// 	console.log("    left: " + segment.leftSiteId + ", right: " + segment.rightSiteId)
+		// }
 
 
-		for (segment of mapSegments) {
-			recomputeMap(segment, getIntersectedTrapezoids(segment));
-		}
+		// for (segment of mapSegments) {
+		// 	recomputeMap(segment, getIntersectedTrapezoids(segment));
+		// }
 
 		console.log("-------------")
 
@@ -204,10 +228,24 @@ PointLocation = function() {
 	 * @parameter points : the set of points that define the area. Each point must have the object format of
 	 * 						"{x,y}" and must be ordered counterclockwise
 	 */
-	function addArea(id, segments) {
+	function addArea(id, points) {
+// for (point of points) {
+// 		console.log("x: " + point.x + ", y: " + point.y)
+// 	}
 
-		var newSegments = processSegments(id, segments)
+		var newSegments = processSegments(id, points)
 		mapSegments = mapSegments.concat(newSegments)
+
+		var normSegments = []
+		for (var i = 0; i < points.length; i++) {
+
+			var segment = new Segment()
+			segment.setVa(points[i])
+				   .setVb(points[(i+1) % points.length]) 
+			normSegments.push(segment)
+		}
+
+		normAreas.push({id: id, segments: normSegments})
 	};
 
 	/* Computes the location of the query point
@@ -232,8 +270,34 @@ PointLocation = function() {
 			siteId = D[node.trapezoid].siteId
 		}
 
+		siteId = locateNorm(point)
+
 		return siteId
 	};
+
+	function locateNorm(point) {
+console.log("checking for point: x = " + point.x + ",y = " + point.y)
+		for (area of normAreas) {
+console.log("area " + area.id)
+			var toTheLeft = true
+			
+			for (segment of area.segments) {
+console.log("  segment:")
+console.log("  pa: x = " + segment.va.x + ",y = " + segment.va.y)
+console.log("  pb: x = " + segment.vb.x + ",y = " + segment.vb.y)
+				if (positionFromSegment(point, segment) != -1) {
+					console.log("is not to the left!")
+					toTheLeft = false
+				}
+			}
+
+			if (toTheLeft) {
+				return area.id
+			}
+		}
+
+		return -1;
+	}
 
 	/* Given a new segment on the map, it recomputes D and S.
 	 * For each intersected trapezoid, it replaces it by 2 to 4 new ones.
@@ -265,7 +329,7 @@ PointLocation = function() {
 		a[1] = new Trapezoid()
 		a[1].setSiteId(segment.leftSiteId)
 			.setLeftP(segment.va)
-			.setRightP(segment.vb)
+			.setRightP(getIntersection(segment, startTrap.rightp.x))
 			.setLeftTopNeigh(startTrap.leftTopNeigh)
 			.setLeftBottomNeigh(startTrap.leftTopNeigh)
 			.setRightTopNeigh(startTrap.rightTopNeigh)
@@ -274,7 +338,7 @@ PointLocation = function() {
 		a[2] = new Trapezoid()
 		a[2].setSiteId(segment.rightSiteId)
 			.setLeftP(segment.va)
-			.setRightP(segment.vb)
+			.setRightP(getIntersection(segment, startTrap.rightp.x))
 			.setLeftTopNeigh(startTrap.leftBottomNeigh)
 			.setLeftBottomNeigh(startTrap.leftBottomNeigh)
 			.setRightTopNeigh(startTrap.rightBottomNeigh)
@@ -307,13 +371,16 @@ PointLocation = function() {
 				.setLeftTopNeigh(a[1].id)
 				.setLeftBottomNeigh(a[2].id)
 
-			a[1].setRightTopNeigh(a[3].id)
+			a[1].setRightP(segment.vb)
+				.setRightTopNeigh(a[3].id)
 				.setRightBottomNeigh(a[3].id)
 
-			a[2].setRightTopNeigh(a[3].id)
+			a[2].setRightP(segment.vb)
+				.setRightTopNeigh(a[3].id)
 				.setRightBottomNeigh(a[3].id)
 		}
 
+		if (falsePositive) {
 		updateSandD(startTrap, a, segment)
 
 		if (interTraps.length > 1) {
@@ -396,7 +463,7 @@ PointLocation = function() {
 				a[3] = new Trapezoid()
 				a[3].setLeftP(segment.vb)
 					.setRightP(endTrap.rightp)
-					.setRighttTopNeigh(endTrap.rightTopNeigh)
+					.setRightTopNeigh(endTrap.rightTopNeigh)
 					.setRightBottomNeigh(endTrap.rightBottomNeigh)
 					.setLeftTopNeigh(a[1].id)
 					.setLeftBottomNeigh(a[2].id)
@@ -410,6 +477,7 @@ PointLocation = function() {
 
 			updateSandD(endTrap, a, segment)
 		}
+	}
 
 	};
 
@@ -426,7 +494,6 @@ PointLocation = function() {
 				D[trapezoid.id] = trapezoid
 			}
 		}
-
 
 		var pi = qi = null
 
@@ -453,7 +520,7 @@ PointLocation = function() {
 		}
 
 		updateNeighbors(oldTrap, newTraps)
-
+console.log("deleted: " + oldTrap.id)
 		delete D[oldTrap.id]
 	};
 
@@ -497,7 +564,7 @@ PointLocation = function() {
 	function updateLeftNeighbors(oldTrap, newTraps) {
 
 		if (oldTrap.leftTopNeigh != null) {
-
+console.log("accessing: " + oldTrap.leftTopNeigh)
 			var oldLeftTopNeigh = D[oldTrap.leftTopNeigh]
 			var oldLeftBottomNeigh = D[oldTrap.leftBottomNeigh]
 
@@ -532,9 +599,10 @@ PointLocation = function() {
 					}
 
 
-					/* Extraordinaty case. Should not happen
+					/* Extraordinaty case. Should not happen */
 				} else if (oldLeftTopNeigh.rightp.y > oldTrap.leftp.y) {
 
+console.log("y is greater 1")
 					oldLeftTopNeigh.setRightTopNeigh(newTraps.top.id)
 						.setRightBottomNeigh(newTraps.top.id)
 
@@ -543,13 +611,13 @@ PointLocation = function() {
 
 				} else {
 
+console.log("y is lower 1")
 					oldLeftTopNeigh.setRightTopNeigh(newTraps.top.id)
 						.setRightBottomNeigh(newTraps.bottom.id)
 
 					oldLeftBottomNeigh.setRightTopNeigh(newTraps.bottom.id)
 						.setRightBottomNeigh(newTraps.bottom.id)
 
-				} */
 			}
 		}
 	}
@@ -592,9 +660,9 @@ PointLocation = function() {
 						oldRightBottomNeigh.setLeftBottomNeigh(newTraps.bottom.id)
 					}
 
-					/* Extraordinary case, it should not happen 
+					/* Extraordinary case, it should not happen*/ 
 				} else if (oldRightTopNeigh.leftp.y > oldTrap.rightp.y) {
-
+console.log("y is greater")
 					oldRightTopNeigh.setLeftTopNeigh(newTraps.top.id)
 						.setLeftBottomNeigh(newTraps.top.id)
 
@@ -602,14 +670,14 @@ PointLocation = function() {
 						.setLeftBottomNeigh(newTraps.bottom.id)
 
 				} else {
+console.log("y is lower")
 
 					oldRightTopNeigh.setLeftTopNeigh(newTraps.top.id)
 						.setLeftBottomNeigh(newTraps.bottom.id)
 
 					oldRightBottomNeigh.setLeftTopNeigh(newTraps.bottom.id)
 						.setLeftBottomNeigh(newTraps.bottom.id)
-				} */
-			}
+				}
 		}
 	}
 };
@@ -654,7 +722,9 @@ PointLocation = function() {
 		var node = S
 
 		if(node.type == "leaf") { /*Case with only one trapezoid on the map*/
+			
 			S = newNode
+
 		} else {
 
 			var nextNode = node;
@@ -668,7 +738,12 @@ PointLocation = function() {
 						nextNode = node.leftChild
 
 						if (nextNode.type == "leaf") {
-							node.leftChild = newNode
+
+							if(nextNode.trapezoid === trapezoid.id) {
+								node.leftChild = newNode
+							} else {
+								alert("error in search 1")
+							}
 						}
 
 					} else {
@@ -676,7 +751,11 @@ PointLocation = function() {
 						nextNode = node.rightChild
 
 						if (nextNode.type == "leaf") {
+							if(nextNode.trapezoid === trapezoid.id) {
 							node.rightChild = newNode
+						} else {
+							alert("error in search 2")
+						}
 						}
 					}
 
@@ -688,7 +767,11 @@ PointLocation = function() {
 						case 1:
 							nextNode = node.topChild;
 							if (nextNode.type == "leaf") {
+								if(nextNode.trapezoid === trapezoid.id) {
 								node.topChild = newNode
+							} else {
+								alert("error in search 3")
+							}
 							}
 							break;
 
@@ -698,7 +781,11 @@ PointLocation = function() {
 								nextNode = node.topChild
 
 								if (nextNode.type == "leaf") {
+									if(nextNode.trapezoid === trapezoid.id) {
 									node.topChild = newNode
+								} else {
+									alert("error in search 4")
+								}
 								}
 
 							} else if (node.bottomChild.trapezoid === trapezoid.id) {
@@ -706,8 +793,13 @@ PointLocation = function() {
 								nextNode = node.bottomChild
 
 								if (nextNode.type == "leaf") {
+									if(nextNode.trapezoid === trapezoid.id) {
 									node.bottomChild = newNode
+								} else {
+									alert("error in search 5")
 								}
+								}
+
 							} else {
 
 								pos = positionFromSegment(trapezoid.rightp, node.segment)
@@ -716,7 +808,11 @@ PointLocation = function() {
 									case 1:
 										nextNode = node.topChild;
 										if (nextNode.type == "leaf") {
+											if(nextNode.trapezoid === trapezoid.id) {
 											node.topChild = newNode
+										} else {
+											alert("error in search 6")
+										}
 										}
 										break;
 
@@ -727,7 +823,11 @@ PointLocation = function() {
 											nextNode = node.topChild
 
 											if (nextNode.type == "leaf") {
+												if(nextNode.trapezoid === trapezoid.id) {
 												node.topChild = newNode
+											} else {
+												alert("error in search 7")
+											}
 											}
 
 										} else if (node.bottomChild.trapezoid === trapezoid.id) {
@@ -735,7 +835,11 @@ PointLocation = function() {
 											nextNode = node.bottomChild
 
 											if (nextNode.type == "leaf") {
+												if(nextNode.trapezoid === trapezoid.id) {
 												node.bottomChild = newNode
+											} else {
+												alert("error in search 8")
+											}
 											}
 										}
 										break;
@@ -743,7 +847,11 @@ PointLocation = function() {
 									case -1:
 										nextNode = node.bottomChild;
 										if (nextNode.type == "leaf") {
+											if(nextNode.trapezoid === trapezoid.id) {
 											node.bottomChild = newNode
+										} else {
+											alert("error in search 9")
+										}
 										}
 
 								}
@@ -754,7 +862,11 @@ PointLocation = function() {
 						case -1:
 							nextNode = node.bottomChild;
 							if (nextNode.type == "leaf") {
+								if(nextNode.trapezoid === trapezoid.id) {
 								node.bottomChild = newNode
+							} else {
+								alert("error in search 10")
+							}
 							}
 					}
 				}
@@ -791,14 +903,14 @@ PointLocation = function() {
 		var currentTrapId = nodeA.trapezoid
 		var currentTrap = D[currentTrapId]
 
-		while(segment.vb.x > currentTrap.rightp) {
+		while(segment.vb.x > currentTrap.rightp.x) {
 
 			var position = positionFromSegment(currentTrap.rightp, segment)
 
 			if (position === 1) {
-				currentTrapId = currentTrap.rightTopNeigh
-			} else if (position === -1) {
 				currentTrapId = currentTrap.rightBottomNeigh
+			} else if (position === -1) {
+				currentTrapId = currentTrap.rightTopNeigh
 			} else if (position == 0) {
 				alert("on the line") // Delete this after release
 			}
@@ -844,17 +956,29 @@ PointLocation = function() {
 	 *
 	 * @return new segments non-present in mapSegments
 	 */
-	function processSegments(id, segments) {
+	function processSegments(id, points) {
 
 		var newSegments = []
 
-		for (var i = 0; i < segments.length; i++) {
+		for (var i = 0; i < points.length; i++) {
 
 			var segment = new Segment()
-			segment.setVa(segments[i].va)
-				.setVb(segments[i].vb)
+			segment.setVa(points[i])
+				   .setVb(points[(i+1) % points.length]) // In order to conect to the next point. If the 'i' point is the last one, it is connected to the first point (i=0)
+
+			if (containedIn(segment.va, degeneratePoints)) {
+				segment.setVa(segment.va + 1)
+			}
+
+			if (containedIn(segment.vb, degeneratePoints)) {
+				segment.setVb(segment.vb + 1)
+			}
 
 			segment = fix(id, segment)
+
+			if (segment.isDegenerate) {
+				degeneratePoints.push({x: segment.vb.x - 1, y: segment.vb.y})
+			}
 
 			if (!segment.containedIn(mapSegments)) {
 				newSegments.push(segment)
@@ -876,7 +1000,7 @@ PointLocation = function() {
 
 		if (segment.containedIn(mapSegments)) {
 
-			var index = getIndex(segment, mapSegments)
+			var index = segment.getIndex(mapSegments)
 			segment = mapSegments[index]
 
 			// If the segment is already in the map (and the points were correctly provided by the user,
@@ -891,10 +1015,10 @@ PointLocation = function() {
 
 			segment.setLeftSiteId(id)
 
-			if (segment.va.x > segment.vb.x) {
+			if (segment.va.x > segment.vb.x) { // The segments are rotated in order to mantain the segments pointing to the right
 
 				segment = rotate(segment)
-				console.log("after Rotation: xa " + segment.va.x + ", xb" + segment.vb.x + ", ya " + segment.va.y + ", yb " + segment.vb.y + ", left" + segment.leftSiteId + ", right" + segment.rightSiteId)
+				//console.log("after Rotation: xa " + segment.va.x + ", xb" + segment.vb.x + ", ya " + segment.va.y + ", yb " + segment.vb.y + ", left" + segment.leftSiteId + ", right" + segment.rightSiteId)
 
 			} else if (segment.va.x == segment.vb.x) { // Degenerate case of vertical segments
 
@@ -909,7 +1033,7 @@ PointLocation = function() {
 	};
 
 	function rotate(segment) {
-		console.log("before Rotation: xa " + segment.va.x + ", xb" + segment.vb.x + ", ya " + segment.va.y + ", yb " + segment.vb.y + ", left" + segment.leftSiteId + ", right" + segment.rightSiteId)
+		//console.log("before Rotation: xa " + segment.va.x + ", xb" + segment.vb.x + ", ya " + segment.va.y + ", yb " + segment.vb.y + ", left" + segment.leftSiteId + ", right" + segment.rightSiteId)
 
 		var tempPoint = {x: segment.va.x, y: segment.va.y}
 		var tempSite = segment.leftSiteId
@@ -920,28 +1044,14 @@ PointLocation = function() {
 			.setRightSiteId(tempSite)
 	};
 
-	function getIndex(segment, array) {
-
-		index = -1;
-
-		for (var i = 0; (i < array.length) && (index == -1); i++) {
-
-			if (segment.equals(array[i])) {
-				index = i
-			}
-		}
-
-		return index;
-	};
-
 	/* Given a point and a segment, determines in which side of the segment such point is located
 	 *
 	 * @param point : query point
 	 * @param segment : query segment
 	 *
-	 *	@return	1 if the point is on the left side of the segment
+	 *	@return	1 if the point is on the right side of the segment
 	 *			0 if the point is on the segment
-	 *  		-1 if the point is on the right side of the segment
+	 *  		-1 if the point is on the left side of the segment
 	 */
 	function positionFromSegment(point, segment) {
 
@@ -968,5 +1078,17 @@ PointLocation = function() {
 		var b = segment.va.y - slope * segment.va.x
 
 		return {x: xVal, y: (slope * xVal + b) }
+	};
+
+	function containedIn(point1, array) {
+//console.log("CONTAINED")
+		for (point2 of array) {
+
+			if (point1.x === point2.x && point1.y === point2.y) {
+				return true
+			}
+		}
+
+		return false
 	}
 }
