@@ -14,8 +14,8 @@
 
 </head>
 
-<!-- onload="VoronoiGame.init();" -->
-<body>
+<!-- onload="VoronoiGame.init();"  -->
+<body onLoad = "clearCookies()" >
 	<!--<embed src="music/BGM.mp3" width="180" height="90" loop="true" autostart="true" hidden="true" />-->
 
 	<div id = "header" class = "main">
@@ -23,52 +23,51 @@
 		<div class = "headerContent" id = "right"><h1>Game of Thrones Map Conquest</h1></div>
 	</div>
 	<div id = "content" class = "main">
-		<div>
-			<h2>How to play</h2>
+		<div id = "howto">
+			<b>How to play</b>
 			<p>These are the rules:</p>
 		</div>
-		
 
 		<div class = "playerForm" style = "margin-left: 10%; border-right: 1px solid white;">
 			<h2>Player 1</h2>
-			<form>
+			<form name = "formPlayers" action = "game.html" method = "post" onSubmit = "setCookies()" >
 				<div class = "info">Name: </div>
-				<div class = "details"> <input type = "text" name = "player1Name"> </div>	
+				<div class = "details"> <input type = "text" name = "player1Name" id = "pl1Name" required> </div>	
 				<div class = "info">Flag: </div> 
 				<div class = "details">
-				<select onchange = "changeFlag(value)">
+				<select onchange = "changeFlag1(value)" id = "sel1Flag" required>
 					<option selected disabled>Select a house</option>
-					<option value="baratheon">Baratheon</option>
-					<option value="targaryen" >Targaryen</option>
-					<option value="tyrell">Tyrell</option>
+					<option value="Baratheon">Baratheon</option>
+					<option value="Targaryen" >Targaryen</option>
+					<option value="Tyrell">Tyrell</option>
 				</select>
-				<img src="" id = "player1Flag">
+				<img src="images/flags/noImage.png" id = "player1Flag">
 
 				</div>
-			</form>
+			
 		</div>
 
 		<div class = "playerForm">
 			<h2>Player 2</h2>
-			<form>
+			
 				<div class = "info">Name: </div> 
-				<div class = "details"><input type = "text" name = "player2Name"> </div>	
+				<div class = "details"><input type = "text" name = "player2Name" id = "pl2Name" required> </div>	
 				<div class = "info">Flag: </div>
 				<div class = "details">
-				<select onchange = "changeFlag(value)">
+				<select onchange = "changeFlag2(value)" id = "sel2Flag" required>
 					<option selected disabled>Select a house</option>
-					<option value="lannister">Lannister</option>
-					<option value="stark" >Stark</option>
-					<option value="bolton">Bolton</option>
+					<option value="Lannister">Lannister</option>
+					<option value="Stark" >Stark</option>
+					<option value="Bolton">Bolton</option>
 				</select>
-				<img src="" id = "player2Flag">
+				<img src="images/flags/noImage.png" id = "player2Flag">
 				
 				</div>
-			</form>
 		</div>
 
 		<div id = "submit">
 			<button type = "submit" value = "Submit">Start Game</button>
+			</form>
 		</div>
 		
 	</div>

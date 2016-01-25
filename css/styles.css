@@ -6,13 +6,6 @@ html {
   background-size: cover;
 }
 
-body
-{
-	/*background-color: #ccccff;
-	background-image: url(../images/backgrounds/mapBackground.jpg);
-	background-repeat: no-repeat;*/
-}
-
 svg
 {
 	background : url(../images/backgrounds/westeros.jpg);
@@ -30,8 +23,6 @@ svg
 	background-color: rgba(0, 0, 0, 0.6);
 	color: white;
 }
-
-
 
 #header
 {
@@ -56,7 +47,6 @@ svg
 	margin-left: 20%;
 }
 
-
 #imgHeader
 {
 	max-width:100%;
@@ -65,7 +55,21 @@ svg
 
 #content
 {
-	height: 500px;
+	height: 600px;
+	border-top: 1px solid white;
+}
+
+#howto
+{
+	margin-top: 15px;
+	margin-left: 10px;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+#howto b
+{
+	font-size: 20px;
+	margin-left: 20px;
 }
 
 .playerForm
@@ -146,11 +150,22 @@ svg
 	width: 50px;
 	height: 50px;
 	margin-left: 20px;
-	border: none;
 }
 
 #player1Flag img, #player2Flag img
 {
 	max-width:100%;
 	max-height:100%;
+	border: none;
+}
+
+.playerInfo
+{
+	width: 45%;
+	float: left;
+	margin-top: 5px;
+	margin-left: 2.5%;
+
+
+	font-family: Arial, Helvetica, sans-serif;
 }
