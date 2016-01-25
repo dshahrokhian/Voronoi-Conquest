@@ -35,6 +35,7 @@ level = {
 	{"x": 700, "y" : 25},
 	{"x": 425, "y" : 100},
 	{"x": 275, "y" : 80},
+	{"x": 445, "y" : 555},
 	{"x": 678, "y" : 150}
 	]
 }
@@ -69,10 +70,10 @@ var pointLocation
 var	svg
 
 // Game vars
-var nTurns = 6
+var nTurns = 8
 var currentTurn = 0
-var pl1TurnsLeft = 3
-var pl2TurnsLeft = 3
+var pl1TurnsLeft = 4
+var pl2TurnsLeft = 4
 var conquest
 
 var VoronoiGame = {
