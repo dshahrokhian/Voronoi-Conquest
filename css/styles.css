@@ -8,15 +8,16 @@ html {
 
 svg
 {
+	width: 800px;
+	height: 600px;
 	background : url(../images/backgrounds/westeros.jpg);
-	background-size: 800px 600px;
 	background-repeat: no-repeat;
 	opacity : 0.8;
 }
 
 .main
 {
-	width: 80%;
+	width: 1200px;
 	margin-right: auto;
 	margin-left: auto;
 
@@ -55,15 +56,28 @@ svg
 
 #content
 {
-	height: 600px;
+	height: 650px;
 	border-top: 1px solid white;
+}
+
+#start
+{
+	width: 1100px;
+	margin-left: 50px;
+	margin-top: 10px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 20px;
 }
 
 #howto
 {
-	margin-top: 15px;
-	margin-left: 10px;
+	margin-top: 30px;
+	margin-left: 50px;
+	width:1100px;
+
 	font-family: Arial, Helvetica, sans-serif;
+	float: left;
 }
 
 #howto b
@@ -75,9 +89,9 @@ svg
 .playerForm
 {
 	
-	width: 35%;
+	width: 430px;
 	float: left;
-	margin-right: 5%;
+	margin-right: 100px;
 
 	font-family: Arial, Helvetica, sans-serif;
 }
@@ -115,7 +129,7 @@ svg
 
 #submit button
 {
-	margin-left: 40%;
+	margin-left: 490px;
 	font-size: 20px;
 	border-bottom: none;
 	border-right: none;
@@ -161,11 +175,32 @@ svg
 
 .playerInfo
 {
-	width: 45%;
+	width: 190px;
 	float: left;
 	margin-top: 5px;
-	margin-left: 2.5%;
-
+	margin-left: 5px;
 
 	font-family: Arial, Helvetica, sans-serif;
+}
+
+#p1Flag, #p2Flag
+{
+	width: 100px;
+	height: 100px;
+	margin-left: 45px;
+}
+
+#p1Flag img, #p2Flag img
+{
+	max-width:100%;
+	max-height:100%;
+}
+
+#game
+{
+	float:left;
+	margin-top: 5px;
+
+	height: 600px;
+	width: 800px;
 }

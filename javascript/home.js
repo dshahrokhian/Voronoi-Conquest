@@ -61,20 +61,36 @@ function setCookies()
     return (value != null) ? unescape(value[1]) : null;
  }
 
-function getCookies()
+function setPlayers(turnsPl1, scoreP1, turnsPl2, scoreP2, cTurn)
 {
 	var p1 = document.getElementById('player1');
 
 	var p1Name = getCookie("player1Name");
 	var p1Flag = getCookie("player1Flag");
+
+	var turnP1 = ""
 	
-	p1.innerHTML = "Welcome, " + p1Name + " of house " + p1Flag + "<br/>" + "You have 5 turns left <br/>" + "Score: 0" ;
+	if(cTurn == 0 && turnsPl1 > 0)
+	{
+		turnP1 = " (my turn)";
+	}
+
+	p1.innerHTML = "Hello, <b style = \" color: aqua\">" + p1Name +  "</b><br/>" + "Turns left: " + turnsPl1 + turnP1 + " <br/>" + "Score: " + scoreP1 ;
 
 	var p2 = document.getElementById('player2');
 
 	var p2Name = getCookie("player2Name");
 	var p2Flag = getCookie("player2Flag");
-	
-	p2.innerHTML = "Welcome, " + p2Name + " of house " + p2Flag + "<br/>" + "You have 5 turns left <br/>" + "Score: 0" ;
 
+	var turnP2 = ""
+
+	if(cTurn == 1 && turnsPl2 > 0)
+	{
+		turnP2 = " (my turn)";
+	}
+	
+	p2.innerHTML = "Hello, <b style = \" color: red\">" + p2Name + "</b><br/>"+ "Turns left: " + turnsPl2 + turnP2 +  " <br/>" + "Score: " + scoreP2 ;
+
+	document.getElementById('p1Flag').src = 'images/flags/' + p1Flag + '.png';
+	document.getElementById('p2Flag').src = 'images/flags/' + p2Flag + '.png';
 }
