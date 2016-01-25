@@ -63,11 +63,20 @@ function setCookies()
 
 function setPlayers(turnsPl1, scoreP1, turnsPl2, scoreP2, cTurn)
 {
-	var p1 = document.getElementById('player1');
-
 	var p1Name = getCookie("player1Name");
 	var p1Flag = getCookie("player1Flag");
 
+	var p2Name = getCookie("player2Name");
+	var p2Flag = getCookie("player2Flag");
+
+	if(p1Name == null || p2Name == null)
+	{
+		alert("Please create players before starting the game!");
+		window.location = "home.html";
+		return false
+	}
+
+	var p1 = document.getElementById('player1');
 	var turnP1 = ""
 	
 	if(cTurn == 0 && turnsPl1 > 0)
@@ -78,10 +87,6 @@ function setPlayers(turnsPl1, scoreP1, turnsPl2, scoreP2, cTurn)
 	p1.innerHTML = "Hello, <b style = \" color: aqua\">" + p1Name +  "</b><br/>" + "Turns left: " + turnsPl1 + turnP1 + " <br/>" + "Score: " + scoreP1 ;
 
 	var p2 = document.getElementById('player2');
-
-	var p2Name = getCookie("player2Name");
-	var p2Flag = getCookie("player2Flag");
-
 	var turnP2 = ""
 
 	if(cTurn == 1 && turnsPl2 > 0)
@@ -93,4 +98,6 @@ function setPlayers(turnsPl1, scoreP1, turnsPl2, scoreP2, cTurn)
 
 	document.getElementById('p1Flag').src = 'images/flags/' + p1Flag + '.png';
 	document.getElementById('p2Flag').src = 'images/flags/' + p2Flag + '.png';
+
+	return true
 }

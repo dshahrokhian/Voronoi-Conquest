@@ -113,7 +113,7 @@ var VoronoiGame = {
 				if (currentTurn == nTurns-1) {
 					setTimeout(function(){ 
 						var winner = VoronoiGame.calculateWinner(conquest)
-						alert(winner + " wins!") 
+						alert(winner + " wins! Refresh the page to start a new game.") 
 					}, 500);
 				}
 
