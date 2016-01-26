@@ -3,8 +3,8 @@ var Delaunay
 
 var bboxWidth = 800
 var	bboxHeight = 600
-var x = 100
-var y = 100
+var x = 0
+var y = 0
 
 
 /* ## Usage: var bbox = {

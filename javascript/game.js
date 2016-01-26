@@ -149,15 +149,15 @@ var VoronoiGame = {
 
 	recompute : function(sites) {
 
-		voronoi = new Voronoi()
+		//voronoi = new Voronoi()
 		pointLocation = new PointLocation()
 
 		// Clear svg
 		svg.selectAll(["line","circle","image"]).remove()
 
 		// Recompute the diagram and draw it
-		var diagram = window.voronoi.compute(sites, window.bbox)
-		conquest = this.computeConquest(diagram.cells, level.conquerPoints)
+		var cells = Voronoi.compute(sites, window.bbox)
+		conquest = this.computeConquest(cells, level.conquerPoints)
 		
 		this.drawSites(sites)
 		this.drawConqueredPoints(conquest)
@@ -170,14 +170,16 @@ var VoronoiGame = {
 
 		for(var i = 0; i < cells.length; i++) {
 
-			var cell = cells[i]
+			var cellAttr = cells[i]
 			var areaVertices = []
 
-			for(halfedge of cell.halfedges) {
-				areaVertices.push(halfedge.getStartpoint())
+			var site = cellAttr[0]
+
+			for (var j = 1; j < cellAttr.length; j++) {
+				areaVertices.push(cellAttr[j])
 			}
 
-			areas.push({id: this.indexOf(cell.site, sites), points: areaVertices})
+			areas.push({id: this.indexOf(site, sites), points: areaVertices})
 		}
 
 		var conqueredPoints = []
