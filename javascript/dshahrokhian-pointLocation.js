@@ -199,25 +199,7 @@ PointLocation = function() {
 
 		for (area of areas) {
 			addArea(area.id, area.points)
-			//addArea(area.id, area.segments)
 		}
-
-		// for (segment of mapSegments) {
-		// 	console.log("segment: ")
-		// 	console.log("  va")
-		// 	console.log("    x: " + segment.va.x + ", y: " + segment.va.y)
-		// 	console.log("  vb")
-		// 	console.log("    x: " + segment.vb.x + ", y: " + segment.vb.y)
-		// 	console.log("  sites")
-		// 	console.log("    left: " + segment.leftSiteId + ", right: " + segment.rightSiteId)
-		// }
-
-
-		// for (segment of mapSegments) {
-		// 	recomputeMap(segment, getIntersectedTrapezoids(segment));
-		// }
-
-		console.log("-------------")
 
 		return locate(point)
 	};
@@ -276,15 +258,10 @@ PointLocation = function() {
 	};
 
 	function locateNorm(point) {
-console.log("checking for point: x = " + point.x + ",y = " + point.y)
 		for (area of normAreas) {
-console.log("area " + area.id)
 			var toTheLeft = true
 			
 			for (segment of area.segments) {
-console.log("  segment:")
-console.log("  pa: x = " + segment.va.x + ",y = " + segment.va.y)
-console.log("  pb: x = " + segment.vb.x + ",y = " + segment.vb.y)
 				if (positionFromSegment(point, segment) != -1) {
 					console.log("is not to the left!")
 					toTheLeft = false
@@ -520,7 +497,6 @@ console.log("  pb: x = " + segment.vb.x + ",y = " + segment.vb.y)
 		}
 
 		updateNeighbors(oldTrap, newTraps)
-console.log("deleted: " + oldTrap.id)
 		delete D[oldTrap.id]
 	};
 
@@ -564,7 +540,6 @@ console.log("deleted: " + oldTrap.id)
 	function updateLeftNeighbors(oldTrap, newTraps) {
 
 		if (oldTrap.leftTopNeigh != null) {
-console.log("accessing: " + oldTrap.leftTopNeigh)
 			var oldLeftTopNeigh = D[oldTrap.leftTopNeigh]
 			var oldLeftBottomNeigh = D[oldTrap.leftBottomNeigh]
 
@@ -601,8 +576,6 @@ console.log("accessing: " + oldTrap.leftTopNeigh)
 
 					/* Extraordinaty case. Should not happen */
 				} else if (oldLeftTopNeigh.rightp.y > oldTrap.leftp.y) {
-
-console.log("y is greater 1")
 					oldLeftTopNeigh.setRightTopNeigh(newTraps.top.id)
 						.setRightBottomNeigh(newTraps.top.id)
 
@@ -610,8 +583,6 @@ console.log("y is greater 1")
 						.setRightBottomNeigh(newTraps.bottom.id)
 
 				} else {
-
-console.log("y is lower 1")
 					oldLeftTopNeigh.setRightTopNeigh(newTraps.top.id)
 						.setRightBottomNeigh(newTraps.bottom.id)
 
@@ -662,7 +633,6 @@ console.log("y is lower 1")
 
 					/* Extraordinary case, it should not happen*/ 
 				} else if (oldRightTopNeigh.leftp.y > oldTrap.rightp.y) {
-console.log("y is greater")
 					oldRightTopNeigh.setLeftTopNeigh(newTraps.top.id)
 						.setLeftBottomNeigh(newTraps.top.id)
 
@@ -670,7 +640,6 @@ console.log("y is greater")
 						.setLeftBottomNeigh(newTraps.bottom.id)
 
 				} else {
-console.log("y is lower")
 
 					oldRightTopNeigh.setLeftTopNeigh(newTraps.top.id)
 						.setLeftBottomNeigh(newTraps.bottom.id)

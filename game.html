@@ -6,8 +6,9 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
 	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>	
-	<script type="text/javascript" src="temp/jquery-1.12.0.js"></script>
-	<script type="text/javascript" src="temp/rhill-voronoi-core.js"></script>
+	<script type="text/javascript" src="javascript/jquery-1.12.0.js"></script>
+	<script type="text/javascript" src="javascript/rpaval-delaunay.js"></script>
+	<script type="text/javascript" src="javascript/schand-voronoi.js"></script>
 	<script type="text/javascript" src="javascript/dshahrokhian-pointLocation.js"></script>
 	<script type="text/javascript" src="javascript/game.js"></script>
 	<script type="text/javascript" src="javascript/home.js"></script>
@@ -18,13 +19,14 @@
 
 <!-- onload="VoronoiGame.init();" -->
 <body onload = "if(setPlayers(4, 0, 4, 0, 0)) VoronoiGame.init();">
-	<embed src="music/BGM.mp3" width="180" height="90" loop="true" autostart="true" hidden="true" />
+	
 
 	<div id = "header" class = "main">
+		<embed src="music/BGM.mp3" width="0" height="0" loop="true" autostart="true" hidden="true" />
 
 		<div class = "headerContent" style = "height: 30px; margin-top: 70px; margin-left: 10px"><a href = "home.html"> Home </a></div>
 		<div class = "headerContent" style = "height: 30px; margin-top: 70px; margin-left: 20px"><a href = "game.html"> New Game </a></div>
-		<div class = "headerContent" id = "left" style = "margin-left: 10%	"><img src="images/icons/flagHeader.png" id = "imgHeader"/></div>
+		<div class = "headerContent" id = "left" style = "margin-left: 10%	"><img src="images/flags/flagHeader.png" id = "imgHeader"/></div>
 		<div class = "headerContent" id = "right"><h1>Game of Thrones Map Conquest</h1></div>
 	</div>
 	<div id = "content" class = "main">

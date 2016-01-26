@@ -333,7 +333,6 @@ Delaunay =
 					//legalize newly added edges
 					this.legalizeEdge([adjP, edge[0]], p, tr1);
 					this.legalizeEdge([adjP, edge[1]], p, tr2);
-
 				}
 
 			}
@@ -373,13 +372,37 @@ Delaunay =
 		},
 
 
+				/* Generates the delaunay triangulation from the set of sites 
+		 * 
+		 * @parameter sites : the array of sites from which we want to generate the Delaunay Triangulation.
+		 * 					  Each element of this array is an object with the pattern
+		 						"{x,y}"
+		 					  This means that for accesing the x-value of the second site you should do
+		 					  	"sites[1].x"
+		 	@returns an array of Delaunay triangles. The points of the triangle are in counterclockwise order.
+		 */
+		addSites: function(sites)
+		{
+			var triangulation = [];
+
+			triangulation.push(new Triangle(Delaunay.outterTriangle(bbox)));
+
+			for(var i = 0; i < sites.length; i++)
+			{
+				var psite = [sites[i].x, sites[i].y];
+				this.addSite(psite, triangulation);
+			}
+
+			return this.removeOutterTriangle(triangulation);
+		},
+
+
 		/*
 		This method adds one point to the Delaunay triangulation
 		*/
-		addSite: function(site)
+		addSite: function(site, triangulation)
 		{
 			var i;
-
 			var found = false;
 
 			for(i = 0; (i <  triangulation.length && !found); i++)
@@ -458,21 +481,9 @@ Delaunay =
 				}
 			}
 
-			return this.removeOutterTriangle(triangulation);
+			return triangulation;
+			//return this.removeOutterTriangle(triangulation);
 		}
-
-	/* Generates the delaunay triangulation from the set of sites 
-	 * 
-	 * @parameter sites : the array of sites from which we want to generate the Delaunay Triangulation.
-	 * 					  Each element of this array is an object with the pattern
-	 						"{x,y}"
-	 					  This means that for accesing the x-value of the second site you should do
-	 					  	"sites[1].x"
-	 	@returns an array of Delaunay triangles. The points of the triangle are in counterclockwise order.
-	 */
-	 /*
-	compute: function(sites) {
-	}*/
 }
 
-triangulation.push(new Triangle(Delaunay.outterTriangle(bbox)));
+//triangulation.push(new Triangle(Delaunay.outterTriangle(bbox)));

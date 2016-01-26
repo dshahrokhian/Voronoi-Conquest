@@ -156,12 +156,12 @@ var VoronoiGame = {
 		svg.selectAll(["line","circle","image"]).remove()
 
 		// Recompute the diagram and draw it
+
 		var cells = Voronoi.compute(sites, window.bbox)
 		conquest = this.computeConquest(cells, level.conquerPoints)
-		
-		this.drawSites(sites)
+			
+		this.drawSites(sites)		
 		this.drawConqueredPoints(conquest)
-		this.drawEdges(diagram.edges)
 	},
 
 	computeConquest : function(cells, conquerPoints) {
@@ -173,13 +173,15 @@ var VoronoiGame = {
 			var cellAttr = cells[i]
 			var areaVertices = []
 
-			var site = cellAttr[0]
+			var site = {x: cellAttr[0][0], y: cellAttr[0][1]}
 
 			for (var j = 1; j < cellAttr.length; j++) {
-				areaVertices.push(cellAttr[j])
+				areaVertices.push({x: cellAttr[j][0], y: cellAttr[j][1]})
 			}
 
+			areaVertices = this.orderCounterClockwise(site, areaVertices)
 			areas.push({id: this.indexOf(site, sites), points: areaVertices})
+			this.drawEdges(areaVertices)
 		}
 
 		var conqueredPoints = []
@@ -188,7 +190,6 @@ var VoronoiGame = {
 			
 			var conquerPoint = conquerPoints[i]
 			var siteId = pointLocation.getLocation(conquerPoint, areas, window.bbox)
-
 			conqueredPoints.push({"siteId": siteId,"coordinates": conquerPoint})
 		}
 
@@ -225,7 +226,6 @@ var VoronoiGame = {
 			} else {
 				image = conquerImages[siteId % 2]
 			}
-
 			svg.append("svg:image")
 			.attr("xlink:href", "images/conquer/" + image)
 			.attr("x", coord.x-15)
@@ -235,19 +235,20 @@ var VoronoiGame = {
 		}
 	},
 
-	drawEdges : function(edges) {
+	drawEdges : function(points) {
 
-		for(var i = 0; i < edges.length; i++) {
+		for(var i = 0; i < points.length; i++) {
 
-			var edge = edges[i];
+			var point1 = points[i]
+			var point2 = points[(i+1) % points.length]
 
-			svg.append("line")
-			.attr("x1", edge.va.x)
-			.attr("y1", edge.va.y)
-			.attr("x2", edge.vb.x)
-			.attr("y2", edge.vb.y)
-			.attr("stroke", "#ac00e6")
-			.attr("stroke-width", 4)
+				svg.append("line")
+				.attr("x1", point1.x)
+				.attr("y1", point1.y)
+				.attr("x2", point2.x)
+				.attr("y2", point2.y)
+				.attr("stroke", "#ac00e6")
+				.attr("stroke-width", 4)
 		}
 	},
 

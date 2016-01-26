@@ -562,17 +562,17 @@ Voronoi = {
 	 
 		compute: function(sites, bbox) {	
 
-	       alert("Inside Voronoi");
+            if(sites.length == 0)
+                return [];
 
 			var triangulation = [];
-			triangulation = Delaunay.addSite(sites[sites.length-1]);
-
 			var VoronoiCells = [];
+
 
 			for(var k = 0; k < sites.length; k++)
 			{
 				VoronoiCells[k] = []
-				VoronoiCells[k].push(sites[k]);
+				VoronoiCells[k].push([sites[k].x, sites[k].y]);
 			}
 
 			if(sites.length == 1)
@@ -623,10 +623,34 @@ Voronoi = {
 			     	VoronoiCells[1].push([ip4.x, ip4.y]);
 			    }
 
+                //alert(VoronoiCells);
+                return VoronoiCells;
+
 
 			}
 
 
+            triangulation = Delaunay.addSites(sites)
+
+            /*
+            svg = d3.select("body")
+            .append("svg")
+            .attr("width", 1000)
+            .attr("height", 1000)
+            .attr("border", 1);
+
+            var temp = triangulation;
+
+            for(i = 0; i < temp.length; i++)
+            {
+                var coordinates = temp[i].p1 + " " + temp[i].p2 + " " + temp[i].p3;
+                svg.append("polygon")
+                .attr("points", coordinates)
+                .attr("stroke","red")
+                .attr("stroke-width",2)
+                .attr("fill", "none");
+            }*/
+    
 			var edgesTr = [];
 
 			for(var i = 0; i < triangulation.length; i++)
@@ -676,11 +700,17 @@ Voronoi = {
 
 			if(sites.length == 3)
 			{
-				var circ3 = this.findCircumcenter(sites[0], sites[1], sites[2]);
+                var p1 = [sites[0].x, sites[0].y],
+                    p2 = [sites[1].x, sites[1].y],
+                    p3 = [sites[2].x, sites[2].y];
+
+				var circ3 = this.findCircumcenter(p1, p2, p3);
 
 				VoronoiCells[0].push(circ3);
 				VoronoiCells[1].push(circ3);
 				VoronoiCells[2].push(circ3);
+
+                console.log(VoronoiCells)
 			}
 
 			
@@ -689,9 +719,152 @@ Voronoi = {
 				VoronoiCells[k] = this.removeDuplicatePoints(VoronoiCells[k]);
 			}
 
+            //sitemin min sitemax max
+            var minmaxl1 = this.findMinimumAndMaximumPointsAlongLine([0, 0], [800, 0], VoronoiCells),
+                minmaxl2 = this.findMinimumAndMaximumPointsAlongLine([0, 0], [0, 600], VoronoiCells),
+                minmaxl3 = this.findMinimumAndMaximumPointsAlongLine([0, 600], [800, 600], VoronoiCells),
+                minmaxl4 = this.findMinimumAndMaximumPointsAlongLine([800, 0], [800, 600], VoronoiCells);
+
+            for(var k = 0; k< sites.length; k++)
+            {
+                if(minmaxl1 != null)
+                {
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl1[0]))
+                    {
+                        VoronoiCells.push([0, 0])
+                    } 
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl1[1]))
+                    {
+                        VoronoiCells.push([800, 0])
+                    }
+                }
+
+                if( minmaxl2 != null)
+                {
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl2[0]))
+                    {
+                        VoronoiCells.push([0, 0])
+                    }
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl2[1]))
+                    {
+                        VoronoiCells.push([0, 600])
+                    }
+                }
+
+
+                if( minmaxl3 != null)
+                {
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl3[0]))
+                    {
+                        VoronoiCells.push([0, 600])
+                    }
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl3[1]))
+                    {
+                        VoronoiCells.push([800, 600])
+                    }
+                }
+
+                if( minmaxl4 != null)
+                {
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl4[0]))
+                    {
+                        VoronoiCells.push([800, 0])
+                    }
+                    if(this.checkIfPointsAreEqual(VoronoiCells[k][0], minmaxl4[1]))
+                    {
+                        VoronoiCells.push([800, 600])
+                    }
+                }
+                
+            }
+
+
+            /*
+            console.log(minmaxl1)
+            console.log(minmaxl2)
+            console.log(minmaxl3)
+            console.log(minmaxl4)*/
+
 			return VoronoiCells;
 
-		}
+		},
+
+
+
+        //p1 can be 0, 0 or 0, 600 or 800, 0
+        //p2 can be 800, 0 or 0, 600 or 800, 600
+
+        findMinimumAndMaximumPointsAlongLine: function(p1, p2, vCells)
+        {
+            var min, max, sitemin = [-20000, -20000], sitemax = [20000, 20000];
+
+            if(p1[0] == p2[0])
+            {
+                var x = p1[0]
+                //same x, this means vertical line
+
+                min = p2[1]
+                max = p1[1]
+
+                for(var i = 0; i<vCells.length; i++)
+                {
+                    var siteCell = vCells[i]
+                    for(var j = 1; j < siteCell.length; j++)
+                    {
+                        var cell = siteCell[j]
+                        if(cell[0] == x )
+                        {
+                            if(cell[1] < min)
+                            {
+                                min = cell[1]
+                                sitemin = siteCell[0]
+                            }
+
+                            if(cell[1] > max)
+                            {
+                                max = cell[1]
+                                sitemax = siteCell[0]
+                            }
+                        }
+
+                    }
+                }
+            }
+            else
+            {
+                //same y, this means horizontal line
+                var y = p1[1]
+
+                min = p2[0]
+                max = p1[0]
+
+                for(var i = 0; i<vCells.length; i++)
+                {
+                    var siteCell = vCells[i]
+                    for(var j = 1; j < siteCell.length; j++)
+                    {
+                        var cell = siteCell[j]
+                        if(cell[1] == y )
+                        {
+                            if(cell[0] < min)
+                            {
+                                min = cell[0]
+                                sitemin = siteCell[0]
+                            }
+
+                            if(cell[0] > max)
+                            {
+                                max = cell[0]
+                                sitemax = siteCell[0]
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            return [sitemin, sitemax]
+        }
 
 }
 
