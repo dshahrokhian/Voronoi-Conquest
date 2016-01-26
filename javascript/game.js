@@ -177,7 +177,10 @@ var VoronoiGame = {
 				areaVertices.push(halfedge.getStartpoint())
 			}
 
-			areas.push({id: this.indexOf(cell.site, sites), points: areaVertices})
+			areas.push({
+				id: this.indexOf(cell.site, sites),
+				points: this.orderCounterClockwise(cell.site, areaVertices)
+			})
 		}
 
 		var conqueredPoints = []
@@ -325,5 +328,65 @@ var VoronoiGame = {
 		}
 
 		return winner
+	},
+
+	orderCounterClockwise : function(center, points) {
+
+		var pointsCpy = points.slice();
+		var ordPoints = [];
+
+		if (points.length > 0) {
+			var point = pointsCpy.splice(0,1)[0]
+
+ 			// Push first point and take it as reference for the rest of the points
+ 			ordPoints.push(point)
+ 			var mainSegment = {va: center, vb: point}
+	
+ 			while (pointsCpy.length > 0) {
+	
+ 				point = pointsCpy[0]
+	
+ 				var auxSegment = {va: center, vb: point}
+	
+ 				var nextPointIndex = 0
+	
+ 				for (var i = 1; i < pointsCpy.length; i++) {
+	
+ 					var auxPoint = pointsCpy[i]
+	
+ 					if (this.positionFromSegment(auxPoint,mainSegment) ==  -1
+ 						&&
+ 						this.positionFromSegment(auxPoint,auxSegment) ==  1) {
+	
+ 						point = auxPoint
+ 						auxSegment.vb = point
+ 						nextPointIndex = i
+ 					}
+ 				}
+	
+ 				ordPoints.push(pointsCpy.splice(nextPointIndex,1)[0])
+ 			}
+ 		}
+ 		
+		return ordPoints;
+},
+
+	/* Given a point and a segment, determines in which side of the segment such point is located
+	 *
+	 * @param point : query point
+	 * @param segment : query segment
+	 *
+	 *	@return	1 if the point is on the right side of the segment
+	 *			0 if the point is on the segment
+	 *  		-1 if the point is on the left side of the segment
+	 */
+	 positionFromSegment : function(point, segment) {
+
+	 	var pa = segment.va
+	 	var pb = segment.vb
+
+	 	var determinant = (pb.x - pa.x) * (point.y - pa.y) - (pb.y - pa.y) * (point.x - pa.x)
+
+	 	return Math.sign(determinant)
+	 }
 	}
-}
