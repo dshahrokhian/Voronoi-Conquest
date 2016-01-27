@@ -472,55 +472,106 @@ Voronoi = {
 		},
 
 
-	   intersection: function(bisector, p, q, r, bbox, circumcenter){
-	    
-	    var is_this_intersection_point_correct;
-	    var ip1 = { x : null, y : null} ;
-	    var ip2 = { x : null, y : null} ;
-	    var ip3 = { x : null, y : null} ;
-	    var ip4 = { x : null, y : null} ;
-	 
-	    ip1 =  this.findIntersectionPoint(bisector, bbox.xl , bbox.yb, bbox.xr, bbox.yb); // intersection with first line [xl,yb],[xr,yb] of bounding box
-	    ip2 =  this.findIntersectionPoint(bisector, bbox.xr , bbox.yb, bbox.xr, bbox.yt); // with second line [xr,yb],[xr,yt] of bounding box
-	    ip3 =  this.findIntersectionPoint(bisector, bbox.xr , bbox.yt, bbox.xl, bbox.yt); // with first line [xr,yt],[xl,yt] of bounding box
-	    ip4 =  this.findIntersectionPoint(bisector, bbox.xl , bbox.yt, bbox.xl, bbox.yb); // with first line [xl,yt],[xl,yb] of bounding box
+        area_of_triangle: function( x1, y1, x2, y2, x3, y3){
 
-	    /*
-	    document.write("<br> Inside intersection: ")
-	    
-	    document.write(ip1.x + " " + ip1.y + "<br>");
-    	document.write(ip2.x + " " + ip2.y + "<br>");
-    	document.write(ip3.x + " " + ip3.y + "<br>");
-    	document.write(ip4.x + " " + ip4.y + "<br>");*/
-    	
-    	
+         return Math.abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
+        },
 
-	    //only if line segment formed by [circumcenter, point of intersection with the edge] intersects the edge pq is the intersection point correct
+ 
+        /* function to check whether point P(x, y) lies inside the triangle formed 
+        by A(x1, y1), B(x2, y2) and C(x3, y3) */
 
-	    var c ={ x: circumcenter[0], y : circumcenter[1] };
+     isPointInsideTriangle: function(x1, y1, x2, y2, x3, y3, x, y)
+     {   
 
-	    if(ip1.x !=null && ip1.y !=null && ip1.x >= x && ip1.x <= bboxWidth && ip1.y >= y && ip1.y <= bboxHeight){
-	    is_this_intersection_point_correct = !this.doIntersect(c, ip1 ,p, r ) && !this.doIntersect(c, ip1 ,q, r );
-	    if(is_this_intersection_point_correct) return ip1; 
-	    }
+             var Area_Triangle = this.area_of_triangle(x1, y1, x2, y2, x3, y3); // Calculating the area of triangle ABC 
 
-	    if(ip2.x !=null && ip2.y !=null && ip2.x >= x && ip2.x <= bboxWidth && ip2.y >= y && ip2.y <= bboxHeight){
-	    is_this_intersection_point_correct = !this.doIntersect(c, ip2 ,p, r ) && !this.doIntersect(c, ip2 ,q, r );
-	    if(is_this_intersection_point_correct) return ip2; 
-	    }
+             var Area1 = this.area_of_triangle(x, y, x2, y2, x3, y3); // Calculating the area of triangle PBC   
+                                                     
+             var Area2 = this.area_of_triangle(x1, y1, x, y, x3, y3); // Calculating the area of triangle PAC   
+ 
+             var Area3 = this.area_of_triangle(x1, y1, x2, y2, x, y); // Calculating the area of triangle PAB 
+   
+             return (Area_Triangle == (Area1 + Area2 + Area3)); // Checking if the sum of Area1, Area2 and Area3 is same as Area_Triangle
+       }
+
+    intersection: function(bisector, p, q, r, bbox, circumcenter)
+    {
+      
+      var is_this_intersection_point_correct;
+      var ip1 = { x : null, y : null} ;
+      var ip2 = { x : null, y : null} ;
+      var ip3 = { x : null, y : null} ;
+      var ip4 = { x : null, y : null} ;
+   
+      ip1 =  this.findIntersectionPoint(bisector, bbox.xl , bbox.yb, bbox.xr, bbox.yb); // intersection with first line [xl,yb],[xr,yb] of bounding box
+      ip2 =  this.findIntersectionPoint(bisector, bbox.xr , bbox.yb, bbox.xr, bbox.yt); // with second line [xr,yb],[xr,yt] of bounding box
+      ip3 =  this.findIntersectionPoint(bisector, bbox.xr , bbox.yt, bbox.xl, bbox.yt); // with first line [xr,yt],[xl,yt] of bounding box
+      ip4 =  this.findIntersectionPoint(bisector, bbox.xl , bbox.yt, bbox.xl, bbox.yb); // with first line [xl,yt],[xl,yb] of bounding box
+
+     //only if line segment formed by [circumcenter, point of intersection with the edge] intersects the edge pq is the intersection point correct
+
+      var c ={ x: circumcenter[0], y : circumcenter[1] };
+
+      if(ip1.x !=null && ip1.y !=null && ip1.x >= x && ip1.x <= bboxWidth && ip1.y >= y && ip1.y <= bboxHeight){
+
+      if(!isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ) {
+              is_this_intersection_point_correct = !this.doIntersect(c, ip1 ,p, r ) && !this.doIntersect(c, ip1 ,q, r );
+              if(is_this_intersection_point_correct) return ip1; 
+         }
+
+        if(isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ) { //circumcenter is inide the triangle pqr
+              is_this_intersection_point_correct = this.doIntersect(c, ip1 ,p, q );
+              if(is_this_intersection_point_correct) return ip1; 
+         }  
+      }
+
+      if(ip2.x !=null && ip2.y !=null && ip2.x >= x && ip2.x <= bboxWidth && ip2.y >= y && ip2.y <= bboxHeight){
+
+        if(!isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ){
+           is_this_intersection_point_correct = !this.doIntersect(c, ip2 ,p, r ) && !this.doIntersect(c, ip2 ,q, r );
+           if(is_this_intersection_point_correct) return ip2; 
+       }
+
+        if(isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ) { //circumcenter is inide the triangle pqr
+              is_this_intersection_point_correct = this.doIntersect(c, ip2 ,p, q );
+              if(is_this_intersection_point_correct) return ip2; 
+         }
 
 
-	    if(ip3.x !=null && ip3.y !=null && ip3.x >= x && ip3.x <= bboxWidth && ip3.y >= y && ip3.y <= bboxHeight){
-	    is_this_intersection_point_correct = !this.doIntersect(c, ip3 ,p, r ) && !this.doIntersect(c, ip3 ,q, r );
-	    if(is_this_intersection_point_correct) return ip3; 
-	    }
+      }
 
 
-	    if(ip4.x !=null && ip4.y !=null && ip4.x >= x && ip4.x <= bboxWidth && ip4.y >= y && ip4.y <= bboxHeight){
-	    is_this_intersection_point_correct = !this.doIntersect(c, ip4 ,p, r ) && !this.doIntersect(c, ip4 ,q, r );
-	    if(is_this_intersection_point_correct) return ip4;  //ip is returned in object form 
-	    }
-	  },
+      if(ip3.x !=null && ip3.y !=null && ip3.x >= x && ip3.x <= bboxWidth && ip3.y >= y && ip3.y <= bboxHeight){
+
+       if(!isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ){
+           is_this_intersection_point_correct = !this.doIntersect(c, ip3 ,p, r ) && !this.doIntersect(c, ip3 ,q, r );
+           if(is_this_intersection_point_correct) return ip3; 
+       }
+
+      if(isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ) { //circumcenter is inide the triangle pqr
+              is_this_intersection_point_correct = this.doIntersect(c, ip3 ,p, q );
+              if(is_this_intersection_point_correct) return ip3; 
+         }
+      }
+
+
+      if(ip4.x !=null && ip4.y !=null && ip4.x >= x && ip4.x <= bboxWidth && ip4.y >= y && ip4.y <= bboxHeight){
+
+            if(!isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ){
+              is_this_intersection_point_correct = !this.doIntersect(c, ip4 ,p, r ) && !this.doIntersect(c, ip4 ,q, r );
+              if(is_this_intersection_point_correct) return ip4;  //ip is returned in object form 
+
+            }
+        
+        if(isPointInsideTriangle(p.x, p.y, q.x, q.y, r.x, r.y, c.x, c.y) ) { //circumcenter is inide the triangle pqr
+              is_this_intersection_point_correct = this.doIntersect(c, ip4 ,p, q );
+              if(is_this_intersection_point_correct) return ip4; 
+         }
+      }
+  }
+
+
 
 	/* point1 is in the form [p1x,p1y] and point2 is in the form [p2x,p2y].
 	boundary edge is formed by point1 and point2 */
