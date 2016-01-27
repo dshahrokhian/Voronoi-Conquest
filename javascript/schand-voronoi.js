@@ -493,7 +493,7 @@ Voronoi = {
              var Area3 = this.area_of_triangle(x1, y1, x2, y2, x, y); // Calculating the area of triangle PAB 
    
              return (Area_Triangle == (Area1 + Area2 + Area3)); // Checking if the sum of Area1, Area2 and Area3 is same as Area_Triangle
-       }
+       },
 
     intersection: function(bisector, p, q, r, bbox, circumcenter)
     {
@@ -569,7 +569,7 @@ Voronoi = {
               if(is_this_intersection_point_correct) return ip4; 
          }
       }
-  }
+  },
 
 
 
